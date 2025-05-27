@@ -1,0 +1,311 @@
+<!DOCTYPE html>
+<html lang="ko">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>이북 리더기</title>
+
+    <!-- 구글폰트 + 머티리얼 아이콘 -->
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+KR&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+
+    <style>
+        html,
+        body {
+            margin: 0;
+            padding: 0;
+            overflow: hidden;
+            font-family: 'Noto Serif KR', serif;
+            background: #f4f4f4;
+            color: #111;
+            transition: background 0.3s, color 0.3s;
+            height: 100%;
+        }
+
+        .dark-mode {
+            background: #111;
+            color: #eee;
+        }
+
+        #controls {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 10px;
+            padding: 10px;
+            background: #ddd;
+            flex-wrap: wrap;
+        }
+
+        .dark-mode #controls {
+            background: #222;
+        }
+
+        #book-title-bar {
+            position: absolute;
+            left: 50%;
+            transform: translateX(-50%);
+            font-weight: bold;
+            font-size: 18px;
+        }
+
+
+        button {
+            border: none;
+            background: none;
+            font-size: 20px;
+            cursor: pointer;
+            color: inherit;
+        }
+
+        .material-icons {
+            vertical-align: middle;
+        }
+
+        #reader-container {
+            position: relative;
+            width: 100vw;
+            height: calc(100vh - 80px);
+            overflow: hidden;
+        }
+
+        .page {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            padding: 80px 70px;
+            box-sizing: border-box;
+            white-space: pre-wrap;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            font-size: var(--reader-font-size, 18px);
+            transition: transform 0.3s ease;
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        #progressBar {
+            width: 100%;
+        }
+
+        .page-title {
+            font-size: clamp(24px, 3vw, 32px);
+            font-weight: bold;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+    </style>
+</head>
+
+<body>
+    <div id="controls">
+        <div>
+            <button onclick="prevPage()">
+                <span class="material-icons">chevron_left</span>
+            </button>
+            <button onclick="nextPage()">
+                <span class="material-icons">chevron_right</span>
+            </button>
+        </div>
+
+        <div id="book-title-bar">책 제목</div>
+
+        <div>
+            <button onclick="toggleTheme()">
+                <span class="material-icons">brightness_6</span>
+            </button>
+            <button onclick="increaseFont()">
+                <span class="material-icons">text_increase</span>
+            </button>
+            <button onclick="decreaseFont()">
+                <span class="material-icons">text_decrease</span>
+            </button>
+            <button onclick="saveBookmark()">
+                <span class="material-icons">bookmark_add</span>
+            </button>
+            <button onclick="goToBookmark()">
+                <span class="material-icons">book</span>
+            </button>
+        </div>
+    </div>
+
+    <progress id="progressBar" value="0" max="100"></progress>
+    <div id="reader-container"></div>
+
+    <script>
+        let fullContent = "";
+        let bookTitle = "";
+        let currentPage = 0;
+        let charsPerPage = 2000;
+        let totalPages = 0;
+        let pages = [];
+        let baseFontSize = 18;
+
+        const container = document.getElementById("reader-container");
+        const titleBar = document.getElementById("book-title-bar");
+        const progressBar = document.getElementById("progressBar");
+
+        function adjustCharsPerPage() {
+            const vw = Math.max(document.documentElement.clientWidth || 0, window.innerWidth || 0);
+            const vh = Math.max(document.documentElement.clientHeight || 0, window.innerHeight || 0);
+            const factor = (vw * vh) / (baseFontSize * 50);
+            charsPerPage = Math.max(500, Math.floor(factor));
+        }
+
+        function renderBook() {
+            adjustCharsPerPage();
+            pages = [];
+            let i = 0;
+
+            while (i < fullContent.length) {
+                let sliceEnd = i + charsPerPage;
+                if (sliceEnd >= fullContent.length) {
+                    pages.push(fullContent.slice(i).trim());
+                    break;
+                }
+
+                let safeEnd = sliceEnd;
+
+                // 1. 문장 끝 기준 우선 검색
+                const lookahead = fullContent.slice(i, i + charsPerPage + 200);
+                const regex = /([.?!…]+)(["”』」\')\]]*)\s+/g;
+
+                let match;
+                let lastGoodBreak = -1;
+
+                while ((match = regex.exec(lookahead)) !== null) {
+                    const matchIndex = match.index + match[0].length;
+                    if (matchIndex >= charsPerPage * 0.8) { // 어느 정도 페이지 말미에 나오는 문장만 고려
+                        lastGoodBreak = matchIndex;
+                        break;
+                    } else {
+                        lastGoodBreak = matchIndex; // fallback
+                    }
+                }
+
+                if (lastGoodBreak !== -1) {
+                    safeEnd = i + lastGoodBreak;
+                } else {
+                    // 2. 문장 끝이 없으면 공백 기준
+                    const fallbackSpace = fullContent.lastIndexOf(' ', sliceEnd);
+                    if (fallbackSpace > i + charsPerPage * 0.7) {
+                        safeEnd = fallbackSpace;
+                    }
+                }
+
+                pages.push(fullContent.slice(i, safeEnd).trim());
+                i = safeEnd;
+            }
+
+            totalPages = pages.length;
+            renderPage(Math.min(currentPage, totalPages - 1), true);
+        }
+
+        fetch('book/book.txt')
+            .then(res => res.text())
+            .then(text => {
+                const lines = text.split(/\r?\n/);
+                bookTitle = lines.shift().trim();
+                fullContent = lines.join('\n').trim();
+                titleBar.textContent = bookTitle;
+
+                document.documentElement.style.setProperty('--reader-font-size', `${baseFontSize}px`);
+                renderBook();
+            });
+
+        function renderPage(page, instant = false) {
+            if (page < 0 || page >= totalPages) return;
+
+            const oldPage = container.querySelector(".page");
+            if (oldPage) {
+                oldPage.classList.add("hidden");
+                container.removeChild(oldPage);
+            }
+
+            const div = document.createElement("div");
+            div.className = "page";
+            div.style.transform = `translateX(${instant ? '0' : (page > currentPage ? '100%' : '-100%')})`;
+
+            if (page === 0) {
+                const title = document.createElement("div");
+                title.className = "page-title";
+                title.textContent = bookTitle;
+                div.appendChild(title);
+            }
+
+            const content = document.createElement("div");
+            content.textContent = pages[page];
+            div.appendChild(content);
+
+            container.appendChild(div);
+
+            requestAnimationFrame(() => {
+                div.style.transform = 'translateX(0)';
+            });
+
+            currentPage = page;
+            updateProgress();
+        }
+
+        function nextPage() {
+            if (currentPage < totalPages - 1) renderPage(currentPage + 1);
+        }
+
+        function prevPage() {
+            if (currentPage > 0) renderPage(currentPage - 1);
+        }
+
+        function updateProgress() {
+            progressBar.value = ((currentPage + 1) / totalPages) * 100;
+        }
+
+        function toggleTheme() {
+            document.body.classList.toggle("dark-mode");
+        }
+
+        function increaseFont() {
+            baseFontSize += 2;
+            document.documentElement.style.setProperty('--reader-font-size', `${baseFontSize}px`);
+            renderBook();
+        }
+
+        function decreaseFont() {
+            baseFontSize = Math.max(10, baseFontSize - 2);
+            document.documentElement.style.setProperty('--reader-font-size', `${baseFontSize}px`);
+            renderBook();
+        }
+
+        function saveBookmark() {
+            localStorage.setItem("bookmarkPage", currentPage);
+            alert("책갈피가 저장되었습니다.");
+        }
+
+        function goToBookmark() {
+            const bookmarked = parseInt(localStorage.getItem("bookmarkPage"));
+            if (!isNaN(bookmarked)) {
+                renderPage(bookmarked);
+            } else {
+                alert("저장된 책갈피가 없습니다.");
+            }
+        }
+
+        let touchStartX = 0;
+        container.addEventListener('touchstart', (e) => {
+            touchStartX = e.changedTouches[0].screenX;
+        });
+
+        container.addEventListener('touchend', (e) => {
+            const touchEndX = e.changedTouches[0].screenX;
+            if (touchEndX < touchStartX - 30) nextPage();
+            if (touchEndX > touchStartX + 30) prevPage();
+        });
+    </script>
+</body>
+
+</html>
