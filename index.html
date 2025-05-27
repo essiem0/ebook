@@ -7,8 +7,14 @@
     <title>내 서재</title>
     <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+KR&display=swap" rel="stylesheet" />
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
-
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Do+Hyeon&display=swap" rel="stylesheet">
     <style>
+        html {
+            scroll-behavior: smooth;
+        }
+
         body {
             margin: 0;
             font-family: 'Noto Serif KR', serif;
@@ -17,19 +23,81 @@
         }
 
         header {
-            text-align: center;
-            padding: 40px 20px;
-            font-size: 32px;
-            font-weight: bold;
-            background: #ffffff;
-            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.06);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            background: #ffffffff;
+            /* backdrop-filter: blur(10px); */
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 16px 32px;
+            font-family: 'Noto Serif KR', serif;
+            box-shadow: 0 2px 12px rgba(0, 0, 0, 0.05);
         }
+
+        .page-title {
+            position: sticky;
+            top: 64px;
+            z-index: 90;
+            background: #f4f4f4;
+            font-size: 24px;
+            font-weight: bold;
+            color: #222;
+
+            /* 핵심: 그리드와 똑같이 맞추기 */
+            max-width: 1100px;
+            padding-top: 40px;
+
+            padding-left: 45px;
+            padding-bottom: 25px;
+            margin: 0 auto;
+
+            box-sizing: border-box;
+        }
+
+
+
+        .logo {
+            font-family: 'Do Hyeon', 'Noto Sans KR', sans-serif;
+            font-size: 28px;
+            font-weight: 500;
+            color: #222;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+
+        .logo i {
+            color: #5c6bc0;
+            font-size: 32px;
+            padding-bottom: 5px;
+        }
+
+        .nav-icons {
+            display: flex;
+            gap: 20px;
+            align-items: center;
+        }
+
+        .nav-icons i {
+            font-size: 24px;
+            color: #555;
+            cursor: pointer;
+            transition: color 0.2s ease;
+        }
+
+        .nav-icons i:hover {
+            color: #000;
+        }
+
 
         .grid {
             display: grid;
             grid-template-columns: repeat(3, 1fr);
             gap: 30px;
-            padding: 80px 20px;
+            padding: 0px 20px;
             max-width: 1000px;
             margin: 0 auto;
         }
@@ -110,7 +178,22 @@
 </head>
 
 <body>
-    <header>내 서재</header>
+    <header>
+        <div class="logo">
+            <i class="material-icons">menu_book</i>
+            디딤돌
+        </div>
+        <div class="nav-icons">
+
+            <i class="material-icons" title="검색"
+                onclick="window.location.href='https://www.yes24.com/main/default.aspx'">search</i>
+
+            <i class="material-icons" title="즐겨찾기">favorite</i>
+        </div>
+    </header>
+    <div class="page-title">내 서재</div>
+    <div class="grid" id="bookGrid"></div>
+
     <div class="grid" id="bookGrid"></div>
 
     <script>
@@ -203,6 +286,18 @@
         function openBook(filename) {
             window.location.href = `reader.html?book=${encodeURIComponent(filename)}`;
         }
+
+        let showingFavoritesOnly = false;
+
+        document.querySelector('.nav-icons i[title="즐겨찾기"]').addEventListener('click', () => {
+            showingFavoritesOnly = !showingFavoritesOnly;
+
+            const allBooks = document.querySelectorAll('.book-item');
+            allBooks.forEach(book => {
+                const isFavorite = book.querySelector('.favorite-icon') !== null;
+                book.style.display = (showingFavoritesOnly && !isFavorite) ? 'none' : 'flex';
+            });
+        });
 
         // 초기 실행
         shuffleFallbackBooks();
