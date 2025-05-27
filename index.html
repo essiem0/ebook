@@ -26,8 +26,7 @@
             position: sticky;
             top: 0;
             z-index: 100;
-            background: #ffffffff;
-            /* backdrop-filter: blur(10px); */
+            background: #fff;
             display: flex;
             justify-content: space-between;
             align-items: center;
@@ -44,19 +43,13 @@
             font-size: 24px;
             font-weight: bold;
             color: #222;
-
-            /* 핵심: 그리드와 똑같이 맞추기 */
             max-width: 1100px;
             padding-top: 40px;
-
             padding-left: 45px;
             padding-bottom: 25px;
             margin: 0 auto;
-
             box-sizing: border-box;
         }
-
-
 
         .logo {
             font-family: 'Do Hyeon', 'Noto Sans KR', sans-serif;
@@ -67,7 +60,6 @@
             align-items: center;
             gap: 10px;
         }
-
 
         .logo i {
             color: #5c6bc0;
@@ -91,7 +83,6 @@
         .nav-icons i:hover {
             color: #000;
         }
-
 
         .grid {
             display: grid;
@@ -121,7 +112,6 @@
             left: 8px;
             font-size: 24px;
             color: #e91e63;
-            /* 진한 핑크 하트 */
             z-index: 2;
             background: white;
             border-radius: 50%;
@@ -140,7 +130,6 @@
             object-fit: contain;
             background: #f9f9f9;
         }
-
 
         .book-title {
             padding: 14px 10px;
@@ -184,16 +173,13 @@
             디딤돌
         </div>
         <div class="nav-icons">
-
             <i class="material-icons" title="검색"
                 onclick="window.location.href='https://www.yes24.com/main/default.aspx'">search</i>
-
             <i class="material-icons" title="즐겨찾기">favorite</i>
         </div>
     </header>
-    <div class="page-title">내 서재</div>
-    <div class="grid" id="bookGrid"></div>
 
+    <div class="page-title">내 서재</div>
     <div class="grid" id="bookGrid"></div>
 
     <script>
@@ -202,23 +188,22 @@
         let bookIndex = 1;
 
         const fallbackBooks = [
-            { title: '청춘의 독서', image: `images/1.png ` },
-            { title: '단 한 번의 삶', image: `images/2.png ` },
-            { title: '소년이 온다', image: `images/3.png ` },
-            { title: '모순', image: `images/4.png ` },
-            { title: '채식주의자', image: `images/5.png ` },
-            { title: '세이노의 가르침', image: `images/6.png ` },
-            { title: '언젠가 우리가 같은 별을 바라본다면', image: `images/7.png ` },
-            { title: '급류', image: `images/8.png ` },
-            { title: '코스모스', image: `images/9.png ` },
-            { title: '이기적 유전자', image: `images/10.png ` },
-            { title: '사피엔스', image: `images/11.png` },
-            { title: '총.균.쇠', image: `images/12.png` },
-            { title: '구의 증명', image: `images/13.png` },
-            { title: '홍학의 자리', image: `images/14.png` },
-            { title: '데미안', image: `images/15.png` },
+            { title: '청춘의 독서', image: `/images/1.png` },
+            { title: '단 한 번의 삶', image: `/images/2.png` },
+            { title: '소년이 온다', image: `/images/3.png` },
+            { title: '모순', image: `/images/4.png` },
+            { title: '채식주의자', image: `/images/5.png` },
+            { title: '세이노의 가르침', image: `/images/6.png` },
+            { title: '언젠가 우리가 같은 별을 바라본다면', image: `/images/7.png` },
+            { title: '급류', image: `/images/8.png` },
+            { title: '코스모스', image: `/images/9.png` },
+            { title: '이기적 유전자', image: `/images/10.png` },
+            { title: '사피엔스', image: `/images/11.png` },
+            { title: '총.균.쇠', image: `/images/12.png` },
+            { title: '구의 증명', image: `/images/13.png` },
+            { title: '홍학의 자리', image: `/images/14.png` },
+            { title: '데미안', image: `/images/15.png` },
         ];
-
 
         let shuffledFallback = [...fallbackBooks];
         let fallbackIndex = 0;
@@ -242,7 +227,7 @@
             if (bookIndex > maxBooksToTry) return;
 
             const filename = `book/book${bookIndex}.txt`;
-            const image = `images/book${bookIndex}.png`;
+            const image = `/images/book${bookIndex}.png`;
 
             fetch(filename)
                 .then(response => {
@@ -251,9 +236,8 @@
                 })
                 .then(text => {
                     const title = text.split('\n')[0] || '제목 없음';
-                    createBookItem(title, image, () => openBook(filename), true); // ← showFavorite = true
+                    createBookItem(title, image, () => openBook(filename), true);
                 })
-
                 .catch(() => {
                     const book = getNextFallbackBook();
                     createBookItem(book.title, book.image, () => {
@@ -261,7 +245,6 @@
                         window.open(yes24SearchUrl, '_blank');
                     });
                 })
-
                 .finally(() => {
                     bookIndex++;
                     loadNextBook();
@@ -273,15 +256,26 @@
             bookItem.className = 'book-item';
             bookItem.onclick = onClick;
 
-            bookItem.innerHTML = `
-    ${showFavorite ? `<span class="material-icons favorite-icon">favorite</span>` : ''}
-    <img src="${imageSrc}" alt="${title}" onerror="this.onerror=null;this.src='images/error.png';" />
-    <div class="book-title">${title}</div>
-  `;
+            const image = new Image();
+            image.src = imageSrc;
+            image.alt = title;
+            image.onload = () => { }; // 필요시 추가 처리
+            image.onerror = () => {
+                image.src = '/images/error.png';
+            };
+
+            image.style = 'width: 100%; aspect-ratio: 2 / 3; object-fit: contain; background: #f9f9f9;';
+
+            bookItem.innerHTML = `${showFavorite ? `<span class="material-icons favorite-icon">favorite</span>` : ''}`;
+            bookItem.appendChild(image);
+
+            const titleDiv = document.createElement('div');
+            titleDiv.className = 'book-title';
+            titleDiv.textContent = title;
+            bookItem.appendChild(titleDiv);
 
             bookGrid.appendChild(bookItem);
         }
-
 
         function openBook(filename) {
             window.location.href = `reader.html?book=${encodeURIComponent(filename)}`;
@@ -291,7 +285,6 @@
 
         document.querySelector('.nav-icons i[title="즐겨찾기"]').addEventListener('click', () => {
             showingFavoritesOnly = !showingFavoritesOnly;
-
             const allBooks = document.querySelectorAll('.book-item');
             allBooks.forEach(book => {
                 const isFavorite = book.querySelector('.favorite-icon') !== null;
@@ -299,7 +292,6 @@
             });
         });
 
-        // 초기 실행
         shuffleFallbackBooks();
         loadNextBook();
     </script>
