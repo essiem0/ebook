@@ -91,7 +91,7 @@
         }
 
         #progressBar {
-            width: 100%;
+            width: 90%;
         }
 
         .page-title {
@@ -106,6 +106,9 @@
 <body>
     <div id="controls">
         <div>
+            <button onclick="goHome()">
+                <span class="material-icons">home</span>
+            </button>
             <button onclick="prevPage()">
                 <span class="material-icons">chevron_left</span>
             </button>
@@ -134,6 +137,7 @@
             </button>
         </div>
     </div>
+
 
     <progress id="progressBar" value="0" max="100"></progress>
     <div id="reader-container"></div>
