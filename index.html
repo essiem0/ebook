@@ -117,7 +117,7 @@
         let bookIndex = 1;
 
         const fallbackBooks = [
-            { title: '청춘의 독서', image: 'https://image.yes24.com/goods/145629000/L' },
+            { title: '청춘의 독서', image: 'https://contents.kyobobook.co.kr/sih/fit-in/400x0/pdt/9788901294742.jpg' },
             { title: '단 한 번의 삶', image: 'https://image.yes24.com/goods/144021119/L' },
             { title: '소년이 온다', image: 'https://image.yes24.com/goods/13137546/L' },
             { title: '모순', image: 'https://image.yes24.com/goods/8759796/L' },
@@ -152,9 +152,10 @@
             return shuffledFallback[fallbackIndex++];
         }
 
-        function proxyImage(url) {
-            return `https://images.weserv.nl/?url=${url.replace(/^https?:\/\//, '')}`;
-        }
+        const purchaseLinks = [
+            'https://www.yes24.com', 'https://www.aladin.co.kr',
+            'https://www.kyobobook.co.kr', 'https://book.naver.com'
+        ];
 
         function loadNextBook() {
             if (bookIndex > maxBooksToTry) return;
@@ -169,16 +170,17 @@
                 })
                 .then(text => {
                     const title = text.split('\n')[0] || '제목 없음';
-                    createBookItem(title, image, () => openBook(filename), true);
+                    createBookItem(title, image, () => openBook(filename), true); // ← showFavorite = true
                 })
+
                 .catch(() => {
                     const book = getNextFallbackBook();
-                    const proxiedImage = proxyImage(book.image);
-                    createBookItem(book.title, proxiedImage, () => {
+                    createBookItem(book.title, book.image, () => {
                         const yes24SearchUrl = `https://www.yes24.com/Product/Search?query=${encodeURIComponent(book.title)}`;
                         window.open(yes24SearchUrl, '_blank');
-                    }, false);
+                    });
                 })
+
                 .finally(() => {
                     bookIndex++;
                     loadNextBook();
@@ -191,13 +193,14 @@
             bookItem.onclick = onClick;
 
             bookItem.innerHTML = `
-                ${showFavorite ? `<span class="material-icons favorite-icon">favorite</span>` : ''}
-                <img src="${imageSrc}" alt="${title}" onerror="this.onerror=null;this.src='images/error.png';" />
-                <div class="book-title">${title}</div>
-            `;
+    ${showFavorite ? `<span class="material-icons favorite-icon">favorite</span>` : ''}
+    <img src="${imageSrc}" alt="${title}" onerror="this.onerror=null;this.src='images/error.png';" />
+    <div class="book-title">${title}</div>
+  `;
 
             bookGrid.appendChild(bookItem);
         }
+
 
         function openBook(filename) {
             window.location.href = `reader.html?book=${encodeURIComponent(filename)}`;
@@ -207,7 +210,6 @@
         shuffleFallbackBooks();
         loadNextBook();
     </script>
-
 </body>
 
 </html>
