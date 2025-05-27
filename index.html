@@ -184,8 +184,6 @@
 
     <script>
         const bookGrid = document.getElementById('bookGrid');
-        const maxBooksToTry = 100;
-        let bookIndex = 1;
 
         const fallbackBooks = [
             { title: '청춘의 독서', image: `/images/1.png` },
@@ -205,52 +203,6 @@
             { title: '데미안', image: `/images/15.png` },
         ];
 
-        let shuffledFallback = [...fallbackBooks];
-        let fallbackIndex = 0;
-
-        function shuffleFallbackBooks() {
-            for (let i = shuffledFallback.length - 1; i > 0; i--) {
-                const j = Math.floor(Math.random() * (i + 1));
-                [shuffledFallback[i], shuffledFallback[j]] = [shuffledFallback[j], shuffledFallback[i]];
-            }
-        }
-
-        function getNextFallbackBook() {
-            if (fallbackIndex >= shuffledFallback.length) {
-                shuffleFallbackBooks();
-                fallbackIndex = 0;
-            }
-            return shuffledFallback[fallbackIndex++];
-        }
-
-        function loadNextBook() {
-            if (bookIndex > maxBooksToTry) return;
-
-            const filename = `book/book${bookIndex}.txt`;
-            const image = `/images/book${bookIndex}.png`;
-
-            fetch(filename)
-                .then(response => {
-                    if (!response.ok) throw new Error('파일 없음');
-                    return response.text();
-                })
-                .then(text => {
-                    const title = text.split('\n')[0] || '제목 없음';
-                    createBookItem(title, image, () => openBook(filename), true);
-                })
-                .catch(() => {
-                    const book = getNextFallbackBook();
-                    createBookItem(book.title, book.image, () => {
-                        const yes24SearchUrl = `https://www.yes24.com/Product/Search?query=${encodeURIComponent(book.title)}`;
-                        window.open(yes24SearchUrl, '_blank');
-                    });
-                })
-                .finally(() => {
-                    bookIndex++;
-                    loadNextBook();
-                });
-        }
-
         function createBookItem(title, imageSrc, onClick, showFavorite = false) {
             const bookItem = document.createElement('div');
             bookItem.className = 'book-item';
@@ -259,7 +211,6 @@
             const image = new Image();
             image.src = imageSrc;
             image.alt = title;
-            image.onload = () => { }; // 필요시 추가 처리
             image.onerror = () => {
                 image.src = '/images/error.png';
             };
@@ -277,12 +228,34 @@
             bookGrid.appendChild(bookItem);
         }
 
+        function loadBooks() {
+            fallbackBooks.forEach((book, index) => {
+                const filename = `book/book${index + 1}.txt`;
+                const image = `/images/book${index + 1}.png`;
+
+                fetch(filename)
+                    .then(response => {
+                        if (!response.ok) throw new Error('파일 없음');
+                        return response.text();
+                    })
+                    .then(text => {
+                        const title = text.split('\n')[0] || '제목 없음';
+                        createBookItem(title, image, () => openBook(filename), true);
+                    })
+                    .catch(() => {
+                        createBookItem(book.title, book.image, () => {
+                            const yes24SearchUrl = `https://www.yes24.com/Product/Search?query=${encodeURIComponent(book.title)}`;
+                            window.open(yes24SearchUrl, '_blank');
+                        });
+                    });
+            });
+        }
+
         function openBook(filename) {
             window.location.href = `reader.html?book=${encodeURIComponent(filename)}`;
         }
 
         let showingFavoritesOnly = false;
-
         document.querySelector('.nav-icons i[title="즐겨찾기"]').addEventListener('click', () => {
             showingFavoritesOnly = !showingFavoritesOnly;
             const allBooks = document.querySelectorAll('.book-item');
@@ -292,8 +265,8 @@
             });
         });
 
-        shuffleFallbackBooks();
-        loadNextBook();
+        loadBooks();
+
     </script>
 </body>
 
