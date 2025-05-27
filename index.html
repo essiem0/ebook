@@ -183,6 +183,7 @@
     <div class="grid" id="bookGrid"></div>
 
     <script>
+
         const bookGrid = document.getElementById('bookGrid');
 
         const fallbackBooks = [
@@ -229,9 +230,15 @@
         }
 
         function loadBooks() {
+            const bookBasePath = 'book/';
+            const imageBasePath = '/images/';
+
             fallbackBooks.forEach((book, index) => {
-                const filename = `book/book${index + 1}.txt`;
-                const image = `/images/book${index + 1}.png`;
+                const bookFilename = `book${index + 1}.txt`;
+                const imageFilename = `book${index + 1}.png`;
+
+                const filename = `${bookBasePath}${bookFilename}`;
+                const image = `${imageBasePath}${imageFilename}`;
 
                 fetch(filename)
                     .then(response => {
@@ -250,6 +257,7 @@
                     });
             });
         }
+
 
         function openBook(filename) {
             window.location.href = `reader.html?book=${encodeURIComponent(filename)}`;
