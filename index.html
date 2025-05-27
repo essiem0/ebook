@@ -187,22 +187,24 @@
         const bookGrid = document.getElementById('bookGrid');
 
         const fallbackBooks = [
-            { title: '청춘의 독서', image: `/images/1.png` },
-            { title: '단 한 번의 삶', image: `/images/2.png` },
-            { title: '소년이 온다', image: `/images/3.png` },
-            { title: '모순', image: `/images/4.png` },
-            { title: '채식주의자', image: `/images/5.png` },
-            { title: '세이노의 가르침', image: `/images/6.png` },
-            { title: '언젠가 우리가 같은 별을 바라본다면', image: `/images/7.png` },
-            { title: '급류', image: `/images/8.png` },
-            { title: '코스모스', image: `/images/9.png` },
-            { title: '이기적 유전자', image: `/images/10.png` },
-            { title: '사피엔스', image: `/images/11.png` },
-            { title: '총.균.쇠', image: `/images/12.png` },
-            { title: '구의 증명', image: `/images/13.png` },
-            { title: '홍학의 자리', image: `/images/14.png` },
-            { title: '데미안', image: `/images/15.png` },
+            '청춘의 독서',
+            '단 한 번의 삶',
+            '소년이 온다',
+            '모순',
+            '채식주의자',
+            '세이노의 가르침',
+            '언젠가 우리가 같은 별을 바라본다면',
+            '급류',
+            '코스모스',
+            '이기적 유전자',
+            '사피엔스',
+            '총.균.쇠',
+            '구의 증명',
+            '홍학의 자리',
+            '데미안'
+
         ];
+
 
         function createBookItem(title, imageSrc, onClick, showFavorite = false) {
             const bookItem = document.createElement('div');
@@ -233,12 +235,11 @@
             const bookBasePath = 'book/';
             const imageBasePath = '/images/';
 
-            fallbackBooks.forEach((book, index) => {
+            fallbackBooks.forEach((title, index) => {
                 const bookFilename = `book${index + 1}.txt`;
-                const imageFilename = `book${index + 1}.png`;
-
+                const fallbackImage = `${imageBasePath}${index + 1}.png`;
+                const bookImage = `${imageBasePath}book${index + 1}.png`;
                 const filename = `${bookBasePath}${bookFilename}`;
-                const image = `${imageBasePath}${imageFilename}`;
 
                 fetch(filename)
                     .then(response => {
@@ -246,12 +247,12 @@
                         return response.text();
                     })
                     .then(text => {
-                        const title = text.split('\n')[0] || '제목 없음';
-                        createBookItem(title, image, () => openBook(filename), true);
+                        const fetchedTitle = text.split('\n')[0] || '제목 없음';
+                        createBookItem(fetchedTitle, bookImage, () => openBook(filename), true);
                     })
                     .catch(() => {
-                        createBookItem(book.title, book.image, () => {
-                            const yes24SearchUrl = `https://www.yes24.com/Product/Search?query=${encodeURIComponent(book.title)}`;
+                        createBookItem(title, fallbackImage, () => {
+                            const yes24SearchUrl = `https://www.yes24.com/Product/Search?query=${encodeURIComponent(title)}`;
                             window.open(yes24SearchUrl, '_blank');
                         });
                     });
