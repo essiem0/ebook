@@ -91,7 +91,7 @@
         }
 
         #progressBar {
-            width: 90%;
+            width: 100%;
         }
 
         .page-title {
@@ -228,6 +228,8 @@
                 fullContent = lines.join('\n').trim();
                 titleBar.textContent = bookTitle;
 
+                document.title = bookTitle; // ✅ 브라우저 탭 제목 변경
+
                 document.documentElement.style.setProperty('--reader-font-size', `${baseFontSize}px`);
                 renderBook();
             });
@@ -318,6 +320,18 @@
             if (touchEndX < touchStartX - 30) nextPage();
             if (touchEndX > touchStartX + 30) prevPage();
         });
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'ArrowRight') {
+                nextPage();
+            } else if (e.key === 'ArrowLeft') {
+                prevPage();
+            }
+        });
+        function goHome() {
+            window.location.href = '/'; // 또는 '/' 등 원하는 홈 경로
+        }
+
+
     </script>
 </body>
 

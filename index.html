@@ -5,7 +5,7 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>내 서재</title>
-    <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+KR&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+KR&display=swap" rel="stylesheet" />
     <style>
         body {
             margin: 0;
@@ -51,10 +51,11 @@
 
         .book-item img {
             width: 100%;
-            height: auto;
+            aspect-ratio: 2 / 3;
             object-fit: contain;
             background: #f9f9f9;
         }
+
 
         .book-title {
             padding: 14px 10px;
@@ -66,21 +67,18 @@
             border-top: 1px solid #eee;
         }
 
-        /* 데스크탑: 4x4 */
         @media (min-width: 1024px) {
             .grid {
                 grid-template-columns: repeat(4, 1fr);
             }
         }
 
-        /* 태블릿 (834px 이하): 3x3 유지 */
         @media (max-width: 1023px) {
             .grid {
                 grid-template-columns: repeat(3, 1fr);
             }
         }
 
-        /* 모바일: 가로 스크롤 허용 */
         @media (max-width: 600px) {
             body {
                 overflow-x: auto;
@@ -100,37 +98,99 @@
 
     <script>
         const bookGrid = document.getElementById('bookGrid');
+        const maxBooksToTry = 100;
+        let bookIndex = 1;
 
-        const bookList = Array.from({ length: 9 }, (_, i) => ({
-            filename: `book/book${i + 1}.txt`,
-            image: `images/book${i + 1}.png`,
-        }));
+        const fallbackBooks = [
+            { title: '청춘의 독서', image: 'https://image.yes24.com/goods/145629000/L' },
+            { title: '단 한 번의 삶', image: 'https://image.yes24.com/goods/144021119/L' },
+            { title: '소년이 온다', image: 'https://image.yes24.com/goods/13137546/L' },
+            { title: '모순', image: 'https://image.yes24.com/goods/8759796/L' },
+            { title: '채식주의자', image: 'https://image.yes24.com/goods/108422348/L' },
+            { title: '세이노의 가르침', image: 'https://image.yes24.com/goods/117014613/L' },
+            { title: '언젠가 우리가 같은 별을 바라본다면', image: 'https://image.yes24.com/goods/104663596/L' },
+            { title: '급류', image: 'https://image.yes24.com/goods/116586303/L' },
+            { title: '코스모스', image: 'https://image.yes24.com/goods/2312211/L' },
+            { title: '이기적 유전자', image: 'https://image.yes24.com/goods/65067259/L' },
+            { title: '사피엔스', image: 'https://image.yes24.com/goods/23030284/L' },
+            { title: '총.균.쇠', image: 'https://image.yes24.com/goods/118755085/L' },
+            { title: '구의 증명', image: 'https://image.yes24.com/goods/118578901/L' },
+            { title: '홍학의 자리', image: 'https://image.yes24.com/goods/102791425/L' },
+            { title: '데미안', image: 'https://image.yes24.com/goods/176787/L' },
+        ];
 
-        bookList.forEach(book => {
-            fetch(book.filename)
-                .then(response => response.text())
+        let shuffledFallback = [...fallbackBooks];
+        let fallbackIndex = 0;
+
+        function shuffleFallbackBooks() {
+            for (let i = shuffledFallback.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [shuffledFallback[i], shuffledFallback[j]] = [shuffledFallback[j], shuffledFallback[i]];
+            }
+        }
+
+        function getNextFallbackBook() {
+            if (fallbackIndex >= shuffledFallback.length) {
+                shuffleFallbackBooks();
+                fallbackIndex = 0;
+            }
+            return shuffledFallback[fallbackIndex++];
+        }
+
+        const purchaseLinks = [
+            'https://www.yes24.com', 'https://www.aladin.co.kr',
+            'https://www.kyobobook.co.kr', 'https://book.naver.com'
+        ];
+
+        function loadNextBook() {
+            if (bookIndex > maxBooksToTry) return;
+
+            const filename = `book/book${bookIndex}.txt`;
+            const image = `images/book${bookIndex}.png`;
+
+            fetch(filename)
+                .then(response => {
+                    if (!response.ok) throw new Error('파일 없음');
+                    return response.text();
+                })
                 .then(text => {
                     const title = text.split('\n')[0] || '제목 없음';
-
-                    const bookItem = document.createElement('div');
-                    bookItem.className = 'book-item';
-                    bookItem.onclick = () => openBook(book.filename);
-
-                    bookItem.innerHTML = `
-            <img src="${book.image}" alt="${title}" />
-            <div class="book-title">${title}</div>
-          `;
-
-                    bookGrid.appendChild(bookItem);
+                    createBookItem(title, image, () => openBook(filename));
                 })
-                .catch(error => {
-                    console.error(`${book.filename} 로드 실패:`, error);
+                .catch(() => {
+                    const book = getNextFallbackBook();
+                    createBookItem(book.title, book.image, () => {
+                        const yes24SearchUrl = `https://www.yes24.com/Product/Search?query=${encodeURIComponent(book.title)}`;
+                        window.open(yes24SearchUrl, '_blank');
+                    });
+                })
+
+                .finally(() => {
+                    bookIndex++;
+                    loadNextBook();
                 });
-        });
+        }
+
+        function createBookItem(title, imageSrc, onClick) {
+            const bookItem = document.createElement('div');
+            bookItem.className = 'book-item';
+            bookItem.onclick = onClick;
+
+            bookItem.innerHTML = `
+    <img src="${imageSrc}" alt="${title}" onerror="this.onerror=null;this.src='images/error.png';" />
+    <div class="book-title">${title}</div>
+  `;
+
+            bookGrid.appendChild(bookItem);
+        }
 
         function openBook(filename) {
             window.location.href = `reader.html?book=${encodeURIComponent(filename)}`;
         }
+
+        // 초기 실행
+        shuffleFallbackBooks();
+        loadNextBook();
     </script>
 </body>
 
