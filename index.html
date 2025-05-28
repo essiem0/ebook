@@ -178,82 +178,9 @@
     <div class="page-title">내 서재</div>
     <div class="grid" id="bookGrid"></div>
 
-    <script>
-        const bookGrid = document.getElementById('bookGrid');
-        const favoriteTitles = ['무진기행', '봄 봄', '오발탄', '날개'];
-
-        function createBookItem(title, imageSrc, filename) {
-            const bookItem = document.createElement('div');
-            bookItem.className = 'book-item';
-            bookItem.onclick = () => {
-                window.location.href = `reader.html?book=${encodeURIComponent(filename)}`;
-            };
-
-            if (favoriteTitles.includes(title)) {
-                const fav = document.createElement('span');
-                fav.className = 'material-icons favorite-icon';
-                fav.textContent = 'favorite';
-                bookItem.appendChild(fav);
-            }
-
-            const image = new Image();
-            image.src = imageSrc;
-            image.alt = title;
-            image.onerror = () => {
-                image.src = '/images/error.png';
-            };
-            bookItem.appendChild(image);
-
-            const titleDiv = document.createElement('div');
-            titleDiv.className = 'book-title';
-            titleDiv.textContent = title;
-            bookItem.appendChild(titleDiv);
-
-            bookGrid.appendChild(bookItem);
-        }
-
-        function loadBooks() {
-            const bookPath = 'book/';
-            const imagePath = '/images/';
-            let index = 1;
-
-            function tryNextBook() {
-                const txtFile = `${bookPath}book${index}.txt`;
-                const imgFile = `${imagePath}book${index}.png`;
-
-                fetch(txtFile)
-                    .then(response => {
-                        if (!response.ok) throw new Error(); // 파일 없으면 catch로 이동
-                        return response.text();
-                    })
-                    .then(text => {
-                        const title = text.split('\n')[0].trim();
-                        createBookItem(title, imgFile, txtFile);
-                        index++;
-                        tryNextBook(); // 다음 파일 시도
-                    })
-                    .catch(() => {
-                        // 더 이상 파일이 없으면 중단
-                        console.log(`book${index}.txt 없음. 불러오기 종료.`);
-                    });
-            }
-
-            tryNextBook();
-        }
+    <script src="js/books.js" defer></script>
 
 
-        // 즐겨찾기 토글
-        let showingFavoritesOnly = false;
-        document.querySelector('.nav-icons i[title="즐겨찾기"]').addEventListener('click', () => {
-            showingFavoritesOnly = !showingFavoritesOnly;
-            document.querySelectorAll('.book-item').forEach(book => {
-                const isFavorite = book.querySelector('.favorite-icon') !== null;
-                book.style.display = (showingFavoritesOnly && !isFavorite) ? 'none' : 'flex';
-            });
-        });
-
-        loadBooks();
-    </script>
 </body>
 
 </html>
