@@ -7,8 +7,6 @@
     <title>내 서재</title>
     <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+KR&display=swap" rel="stylesheet" />
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Do+Hyeon&display=swap" rel="stylesheet">
     <style>
         html {
@@ -31,7 +29,6 @@
             justify-content: space-between;
             align-items: center;
             padding: 16px 32px;
-            font-family: 'Noto Serif KR', serif;
             box-shadow: 0 2px 12px rgba(0, 0, 0, 0.05);
         }
 
@@ -44,9 +41,7 @@
             font-weight: bold;
             color: #222;
             max-width: 1100px;
-            padding-top: 40px;
-            padding-left: 45px;
-            padding-bottom: 25px;
+            padding: 40px 0 25px 45px;
             margin: 0 auto;
             box-sizing: border-box;
         }
@@ -88,7 +83,7 @@
             display: grid;
             grid-template-columns: repeat(3, 1fr);
             gap: 30px;
-            padding: 0px 20px;
+            padding: 0 20px;
             max-width: 1000px;
             margin: 0 auto;
         }
@@ -106,22 +101,22 @@
             height: 100%;
         }
 
+        .book-item:hover {
+            transform: translateY(-6px);
+            box-shadow: 0 12px 24px rgba(0, 0, 0, 0.15);
+        }
+
         .favorite-icon {
             position: absolute;
             top: 8px;
             left: 8px;
             font-size: 24px;
             color: #e91e63;
-            z-index: 2;
             background: white;
             border-radius: 50%;
             padding: 2px;
+            z-index: 2;
             box-shadow: 0 1px 4px rgba(0, 0, 0, 0.1);
-        }
-
-        .book-item:hover {
-            transform: translateY(-6px);
-            box-shadow: 0 12px 24px rgba(0, 0, 0, 0.15);
         }
 
         .book-item img {
@@ -169,7 +164,8 @@
 <body>
     <header>
         <div class="logo">
-            <i class="material-icons">menu_book</i>
+            <i class="material-icons"
+                onclick="window.location.href='https://ebook.mirae-n.com/@kb2091/44'">menu_book</i>
             디딤돌
         </div>
         <div class="nav-icons">
@@ -183,33 +179,22 @@
     <div class="grid" id="bookGrid"></div>
 
     <script>
-
         const bookGrid = document.getElementById('bookGrid');
+        const favoriteTitles = ['무진기행', '봄 봄', '오발탄', '날개'];
 
-        const fallbackBooks = [
-            '청춘의 독서',
-            '단 한 번의 삶',
-            '소년이 온다',
-            '모순',
-            '채식주의자',
-            '세이노의 가르침',
-            '언젠가 우리가 같은 별을 바라본다면',
-            '급류',
-            '코스모스',
-            '이기적 유전자',
-            '사피엔스',
-            '총.균.쇠',
-            '구의 증명',
-            '홍학의 자리',
-            '데미안'
-
-        ];
-
-
-        function createBookItem(title, imageSrc, onClick, showFavorite = false) {
+        function createBookItem(title, imageSrc, filename) {
             const bookItem = document.createElement('div');
             bookItem.className = 'book-item';
-            bookItem.onclick = onClick;
+            bookItem.onclick = () => {
+                window.location.href = `reader.html?book=${encodeURIComponent(filename)}`;
+            };
+
+            if (favoriteTitles.includes(title)) {
+                const fav = document.createElement('span');
+                fav.className = 'material-icons favorite-icon';
+                fav.textContent = 'favorite';
+                bookItem.appendChild(fav);
+            }
 
             const image = new Image();
             image.src = imageSrc;
@@ -217,10 +202,6 @@
             image.onerror = () => {
                 image.src = '/images/error.png';
             };
-
-            image.style = 'width: 100%; aspect-ratio: 2 / 3; object-fit: contain; background: #f9f9f9;';
-
-            bookItem.innerHTML = `${showFavorite ? `<span class="material-icons favorite-icon">favorite</span>` : ''}`;
             bookItem.appendChild(image);
 
             const titleDiv = document.createElement('div');
@@ -232,50 +213,40 @@
         }
 
         function loadBooks() {
-            const bookBasePath = 'book/';
-            const imageBasePath = '/images/';
+            const totalBooks = 50; // 최대 50권까지 시도
+            const bookPath = 'book/';
+            const imagePath = '/images/';
 
-            fallbackBooks.forEach((title, index) => {
-                const bookFilename = `book${index + 1}.txt`;
-                const fallbackImage = `${imageBasePath}${index + 1}.png`;
-                const bookImage = `${imageBasePath}book${index + 1}.png`;
-                const filename = `${bookBasePath}${bookFilename}`;
+            for (let i = 1; i <= totalBooks; i++) {
+                const txtFile = `${bookPath}book${i}.txt`;
+                const imgFile = `${imagePath}book${i}.png`;
 
-                fetch(filename)
+                fetch(txtFile)
                     .then(response => {
-                        if (!response.ok) throw new Error('파일 없음');
+                        if (!response.ok) throw new Error();
                         return response.text();
                     })
                     .then(text => {
-                        const fetchedTitle = text.split('\n')[0] || '제목 없음';
-                        createBookItem(fetchedTitle, bookImage, () => openBook(filename), true);
+                        const title = text.split('\n')[0].trim();
+                        createBookItem(title, imgFile, txtFile);
                     })
                     .catch(() => {
-                        createBookItem(title, fallbackImage, () => {
-                            const yes24SearchUrl = `https://www.yes24.com/Product/Search?query=${encodeURIComponent(title)}`;
-                            window.open(yes24SearchUrl, '_blank');
-                        });
+                        // 파일 없음 → 아무 것도 안 함
                     });
-            });
+            }
         }
 
-
-        function openBook(filename) {
-            window.location.href = `reader.html?book=${encodeURIComponent(filename)}`;
-        }
-
+        // 즐겨찾기 토글
         let showingFavoritesOnly = false;
         document.querySelector('.nav-icons i[title="즐겨찾기"]').addEventListener('click', () => {
             showingFavoritesOnly = !showingFavoritesOnly;
-            const allBooks = document.querySelectorAll('.book-item');
-            allBooks.forEach(book => {
+            document.querySelectorAll('.book-item').forEach(book => {
                 const isFavorite = book.querySelector('.favorite-icon') !== null;
                 book.style.display = (showingFavoritesOnly && !isFavorite) ? 'none' : 'flex';
             });
         });
 
         loadBooks();
-
     </script>
 </body>
 
