@@ -213,28 +213,34 @@
         }
 
         function loadBooks() {
-            const totalBooks = 50; // 최대 50권까지 시도
             const bookPath = 'book/';
             const imagePath = '/images/';
+            let index = 1;
 
-            for (let i = 1; i <= totalBooks; i++) {
-                const txtFile = `${bookPath}book${i}.txt`;
-                const imgFile = `${imagePath}book${i}.png`;
+            function tryNextBook() {
+                const txtFile = `${bookPath}book${index}.txt`;
+                const imgFile = `${imagePath}book${index}.png`;
 
                 fetch(txtFile)
                     .then(response => {
-                        if (!response.ok) throw new Error();
+                        if (!response.ok) throw new Error(); // 파일 없으면 catch로 이동
                         return response.text();
                     })
                     .then(text => {
                         const title = text.split('\n')[0].trim();
                         createBookItem(title, imgFile, txtFile);
+                        index++;
+                        tryNextBook(); // 다음 파일 시도
                     })
                     .catch(() => {
-                        // 파일 없음 → 아무 것도 안 함
+                        // 더 이상 파일이 없으면 중단
+                        console.log(`book${index}.txt 없음. 불러오기 종료.`);
                     });
             }
+
+            tryNextBook();
         }
+
 
         // 즐겨찾기 토글
         let showingFavoritesOnly = false;
