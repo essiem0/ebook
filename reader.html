@@ -74,10 +74,11 @@
         }
 
         .page {
+            line-height: 1.6;
             position: absolute;
             width: 100%;
             height: 100%;
-            padding: 80px 70px;
+            padding: clamp(40px, 10vh, 80px) clamp(20px, 8vw, 70px);
             box-sizing: border-box;
             white-space: pre-wrap;
             overflow: hidden;
@@ -88,6 +89,9 @@
             font-size: var(--reader-font-size, 18px);
             transition: transform 0.3s ease;
         }
+
+
+
 
         .hidden {
             display: none;
@@ -164,55 +168,51 @@
             const factor = (vw * vh) / (baseFontSize * 50);
             charsPerPage = Math.max(500, Math.floor(factor));
         }
+        function paginateByParagraphs(content) {
+            const tempDiv = document.createElement("div");
+            tempDiv.style.position = "absolute";
+            tempDiv.style.visibility = "hidden";
+            tempDiv.style.width = "100vw";
+            tempDiv.style.height = "calc(100vh - 80px)";
+            tempDiv.style.overflow = "hidden";
+            tempDiv.style.fontSize = `${baseFontSize}px`;
+            tempDiv.style.padding = "80px 70px";
+            tempDiv.style.boxSizing = "border-box";
+            tempDiv.style.lineHeight = "1.6";
+            document.body.appendChild(tempDiv);
 
-        function renderBook() {
-            adjustCharsPerPage();
+            const paragraphs = content.split(/\n{2,}/); // 두 줄 이상 띄운 문단 기준
+            let currentPageContent = "";
             pages = [];
-            let i = 0;
 
-            while (i < fullContent.length) {
-                let sliceEnd = i + charsPerPage;
-                if (sliceEnd >= fullContent.length) {
-                    pages.push(fullContent.slice(i).trim());
-                    break;
-                }
+            for (let i = 0; i < paragraphs.length; i++) {
+                const testContent = currentPageContent + (currentPageContent ? "\n\n" : "") + paragraphs[i].trim();
+                tempDiv.innerText = testContent;
 
-                let safeEnd = sliceEnd;
-
-                // 1. 문장 끝 기준 우선 검색
-                const lookahead = fullContent.slice(i, i + charsPerPage + 200);
-                const regex = /([.?!…]+)(["”』」\')\]]*)\s+/g;
-
-                let match;
-                let lastGoodBreak = -1;
-
-                while ((match = regex.exec(lookahead)) !== null) {
-                    const matchIndex = match.index + match[0].length;
-                    if (matchIndex >= charsPerPage * 0.8) { // 어느 정도 페이지 말미에 나오는 문장만 고려
-                        lastGoodBreak = matchIndex;
-                        break;
-                    } else {
-                        lastGoodBreak = matchIndex; // fallback
+                if (tempDiv.scrollHeight > tempDiv.clientHeight) {
+                    if (currentPageContent.trim()) {
+                        pages.push(currentPageContent.trim());
                     }
-                }
-
-                if (lastGoodBreak !== -1) {
-                    safeEnd = i + lastGoodBreak;
+                    currentPageContent = paragraphs[i].trim(); // 새 페이지 시작
                 } else {
-                    // 2. 문장 끝이 없으면 공백 기준
-                    const fallbackSpace = fullContent.lastIndexOf(' ', sliceEnd);
-                    if (fallbackSpace > i + charsPerPage * 0.7) {
-                        safeEnd = fallbackSpace;
-                    }
+                    currentPageContent = testContent;
                 }
-
-                pages.push(fullContent.slice(i, safeEnd).trim());
-                i = safeEnd;
             }
 
+            if (currentPageContent.trim()) {
+                pages.push(currentPageContent.trim());
+            }
+
+            document.body.removeChild(tempDiv);
             totalPages = pages.length;
             renderPage(Math.min(currentPage, totalPages - 1), true);
         }
+
+
+        function renderBook() {
+            paginateByParagraphs(fullContent);
+        }
+
 
         const params = new URLSearchParams(window.location.search);
         const bookFile = params.get('book'); // 기본값 없음!
