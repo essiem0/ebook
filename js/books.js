@@ -50,3 +50,7 @@ document.querySelector('.nav-icons i[title="즐겨찾기"]').addEventListener('c
         book.style.display = (showingFavoritesOnly && !isFavorite) ? 'none' : 'flex';
     });
 });
+
+window.addEventListener('resize', () => {
+    renderBook();
+});
