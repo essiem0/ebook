@@ -16,157 +16,130 @@
         body {
             margin: 0;
             font-family: 'Noto Serif KR', serif;
-            background: #f4f4f4;
-            color: #222;
+            background: #f9fafb;
+            color: #1f2937;
         }
 
         header {
             position: sticky;
             top: 0;
             z-index: 100;
-            background: #fff;
+            background: white;
+            padding: 20px 40px;
             display: flex;
             justify-content: space-between;
             align-items: center;
-            padding: 16px 32px;
-            box-shadow: 0 2px 12px rgba(0, 0, 0, 0.05);
-        }
-
-        .page-title {
-            position: sticky;
-            top: 64px;
-            z-index: 90;
-            background: #f4f4f4;
-            font-size: 24px;
-            font-weight: bold;
-            color: #222;
-            max-width: 1100px;
-            padding: 40px 0 25px 45px;
-            margin: 0 auto;
-            box-sizing: border-box;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
         }
 
         .logo {
-            font-family: 'Do Hyeon', 'Noto Sans KR', sans-serif;
+            font-family: 'Do Hyeon', sans-serif;
             font-size: 28px;
-            font-weight: 500;
-            color: #222;
+            color: #374151;
             display: flex;
             align-items: center;
             gap: 10px;
+            cursor: pointer;
         }
 
         .logo i {
-            color: #5c6bc0;
             font-size: 32px;
-            padding-bottom: 5px;
+            color: #6366f1;
         }
 
         .nav-icons {
             display: flex;
             gap: 20px;
-            align-items: center;
         }
 
         .nav-icons i {
             font-size: 24px;
-            color: #555;
-            cursor: pointer;
+            color: #6b7280;
             transition: color 0.2s ease;
+            cursor: pointer;
         }
 
         .nav-icons i:hover {
-            color: #000;
+            color: #111827;
+        }
+
+        .page-title {
+            max-width: 1100px;
+            margin: 40px auto 20px;
+            font-size: 26px;
+            font-weight: bold;
+            padding-left: 10px;
+            color: #1e293b;
         }
 
         .grid {
             display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 30px;
-            padding: 0 20px;
-            max-width: 1000px;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 24px;
+            padding: 0 20px 40px;
+            max-width: 1100px;
             margin: 0 auto;
         }
 
         .book-item {
-            position: relative;
-            background: #fff;
+            background: white;
             border-radius: 16px;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
             overflow: hidden;
-            cursor: pointer;
             transition: transform 0.3s ease, box-shadow 0.3s ease;
             display: flex;
             flex-direction: column;
-            height: 100%;
         }
 
         .book-item:hover {
             transform: translateY(-6px);
-            box-shadow: 0 12px 24px rgba(0, 0, 0, 0.15);
+            box-shadow: 0 12px 24px rgba(0, 0, 0, 0.1);
+        }
+
+        .book-item img {
+            width: 100%;
+            aspect-ratio: 2 / 3;
+            object-fit: cover;
+            background: #f3f4f6;
+        }
+
+        .book-title {
+            padding: 16px;
+            font-size: 16px;
+            font-weight: 600;
+            text-align: center;
+            background: #f9fafb;
+            border-top: 1px solid #e5e7eb;
         }
 
         .favorite-icon {
             position: absolute;
-            top: 8px;
-            left: 8px;
-            font-size: 24px;
-            color: #fbc02d;
-            /* 노란색 */
+            top: 10px;
+            left: 10px;
+            font-size: 22px;
+            color: #facc15;
             background: white;
             border-radius: 50%;
-            padding: 2px;
-            z-index: 2;
+            padding: 4px;
             box-shadow: 0 1px 4px rgba(0, 0, 0, 0.1);
         }
 
-        /* .book-item img {
-            width: 100%;
-            aspect-ratio: 2 / 3;
-            object-fit: contain;
-            background: #f9f9f9;
-        } */
-        .book-item img {
-            width: 100%;
-            height: 100%;
-            object-fit: fill;
-            /* 이미지를 왜곡해서라도 빈 공간 없이 채움 */
-        }
-
-
-        .book-title {
-            padding: 14px 10px;
-            font-size: 15px;
-            font-weight: bold;
-            text-align: center;
-            color: #333;
-            background: #fdfdfd;
-            border-top: 1px solid #eee;
-        }
-
-        @media (min-width: 1024px) {
-            .grid {
-                grid-template-columns: repeat(4, 1fr);
-            }
-        }
-
-        @media (max-width: 1023px) {
-            .grid {
-                grid-template-columns: repeat(3, 1fr);
-            }
-        }
-
-        @media (max-width: 600px) {
-            body {
-                overflow-x: auto;
+        @media (max-width: 768px) {
+            header {
+                padding: 16px 20px;
             }
 
-            .grid {
-                width: 960px;
-                grid-template-columns: repeat(3, 1fr);
+            .page-title {
+                font-size: 22px;
+                padding-left: 10px;
+            }
+
+            .book-title {
+                font-size: 14px;
             }
         }
     </style>
+
 </head>
 
 <body>
