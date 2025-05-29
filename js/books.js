@@ -1,5 +1,5 @@
 const bookGrid = document.getElementById('bookGrid');
-const favoriteTitles = ['무진기행', '봄 봄', '오발탄', '날개'];
+const bestTitles = ['소나기', '날개', '동백꽃', '운수 좋은 날'];
 
 function createBookItem(book) {
     const bookItem = document.createElement('div');
@@ -8,10 +8,10 @@ function createBookItem(book) {
         window.location.href = `reader.html?book=${encodeURIComponent(book.filename)}`;
     };
 
-    if (favoriteTitles.includes(book.title)) {
+    if (bestTitles.includes(book.title)) {
         const favIcon = document.createElement('span');
         favIcon.className = 'material-icons favorite-icon';
-        favIcon.textContent = 'favorite';
+        favIcon.textContent = 'emoji_events';
         bookItem.appendChild(favIcon);
     }
 
@@ -35,7 +35,14 @@ function createBookItem(book) {
 fetch('../book/books.json')
     .then(response => response.json())
     .then(data => {
-        data.forEach(createBookItem);
+        data
+            .sort((a, b) => {
+                const aIsFav = bestTitles.includes(a.title);
+                const bIsFav = bestTitles.includes(b.title);
+                return (aIsFav === bIsFav) ? 0 : aIsFav ? -1 : 1;
+            })
+            .forEach(createBookItem);
+
     })
     .catch(error => {
         console.error('책 데이터를 불러오는 데 실패했습니다:', error);
@@ -43,7 +50,7 @@ fetch('../book/books.json')
 
 // 즐겨찾기 토글 기능
 let showingFavoritesOnly = false;
-document.querySelector('.nav-icons i[title="즐겨찾기"]').addEventListener('click', () => {
+document.querySelector('.nav-icons i[title="베스트"]').addEventListener('click', () => {
     showingFavoritesOnly = !showingFavoritesOnly;
     document.querySelectorAll('.book-item').forEach(book => {
         const isFavorite = book.querySelector('.favorite-icon') !== null;

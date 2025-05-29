@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>내 서재</title>
+    <title>디딤돌 - 한국 문학의 장</title>
     <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+KR&display=swap" rel="stylesheet" />
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Do+Hyeon&display=swap" rel="stylesheet">
@@ -111,7 +111,8 @@
             top: 8px;
             left: 8px;
             font-size: 24px;
-            color: #e91e63;
+            color: #fbc02d;
+            /* 노란색 */
             background: white;
             border-radius: 50%;
             padding: 2px;
@@ -119,12 +120,19 @@
             box-shadow: 0 1px 4px rgba(0, 0, 0, 0.1);
         }
 
-        .book-item img {
+        /* .book-item img {
             width: 100%;
             aspect-ratio: 2 / 3;
             object-fit: contain;
             background: #f9f9f9;
+        } */
+        .book-item img {
+            width: 100%;
+            height: 100%;
+            object-fit: fill;
+            /* 이미지를 왜곡해서라도 빈 공간 없이 채움 */
         }
+
 
         .book-title {
             padding: 14px 10px;
@@ -164,18 +172,18 @@
 <body>
     <header>
         <div class="logo">
-            <i class="material-icons"
-                onclick="window.location.href='https://ebook.mirae-n.com/@kb2091/44'">menu_book</i>
+            <i class="material-icons" onclick="window.location.href='https://dbook.kro.kr'">menu_book</i>
             디딤돌
         </div>
         <div class="nav-icons">
             <i class="material-icons" title="검색"
                 onclick="window.location.href='https://www.yes24.com/main/default.aspx'">search</i>
-            <i class="material-icons" title="즐겨찾기">favorite</i>
+
+            <i class="material-icons" title="베스트">emoji_events</i>
         </div>
     </header>
 
-    <div class="page-title">내 서재</div>
+    <div class="page-title">모든 책 보기</div>
     <div class="grid" id="bookGrid"></div>
 
     <script src="js/books.js" defer></script>
