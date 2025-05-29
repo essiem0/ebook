@@ -336,6 +336,20 @@
 
 
     </script>
+    <script>
+        // 마우스 오른쪽 버튼 금지
+        document.addEventListener('contextmenu', event => event.preventDefault());
+
+        // 텍스트 선택 금지
+        document.addEventListener('selectstart', event => event.preventDefault());
+
+        // 복사(Ctrl+C), 보기 소스(Ctrl+U), 저장(Ctrl+S) 등 키 조합 방지
+        document.addEventListener('keydown', function (e) {
+            if ((e.ctrlKey || e.metaKey) && ['c', 'u', 's', 'a', 'x'].includes(e.key.toLowerCase())) {
+                e.preventDefault();
+            }
+        });
+    </script>
 </body>
 
 </html>
